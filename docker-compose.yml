@@ -1,0 +1,54 @@
+﻿version: '3.8'
+
+services:
+  # Container do PHP-FPM (roda o código Laravel)
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: agendamento_app
+    volumes:
+      - .:/var/www
+    networks:
+      - agendamento_network
+    depends_on:
+      - db
+
+  # Container do Nginx (servidor web)
+  nginx:
+    image: nginx:alpine
+    container_name: agendamento_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - agendamento_network
+    depends_on:
+      - app
+
+  # Container do MySQL (banco de dados)
+  db:
+    image: mysql:8.0
+    container_name: agendamento_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: agendamento
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_USER: agendamento_user
+      MYSQL_PASSWORD: agendamento_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - agendamento_db_data:/var/lib/mysql
+    networks:
+      - agendamento_network
+
+networks:
+  agendamento_network:
+    driver: bridge
+
+volumes:
+  agendamento_db_data:
+    driver: local
