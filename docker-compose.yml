@@ -8,6 +8,8 @@ services:
     container_name: agendamento_app
     volumes:
       - .:/var/www
+    ports:
+      - "5173:5173"
     networks:
       - agendamento_network
     depends_on:
